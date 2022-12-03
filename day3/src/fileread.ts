@@ -15,7 +15,7 @@ export class ReadFile {
   async applyFunction(callback: (value: string, index: number) => void) {
     let index = 0;
     for await (const line of this.readLine) {
-      callback(line,index);
+      callback(line, index);
       index++;
     }
   }
