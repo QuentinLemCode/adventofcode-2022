@@ -1,12 +1,88 @@
 import { ReadFile } from './fileread';
 
-const file = new ReadFile('input.txt');
+type Position = [number, number];
 
-function onEachLine(line: string) {
-  console.log(line);
+const file = new ReadFile('input.txt');
+let maze: number[][] = [];
+let start: Position = [0, 0];
+let end: Position = [0, 0];
+
+const directions = [
+  [0, 1],
+  [-1, 0],
+  [0, -1],
+  [1, 0],
+];
+
+function onEachLine(line: string, index: number) {
+  maze[index] = line.split('').map((point, idx) => {
+    if (point === 'S') {
+      start = [index, idx];
+      return 0;
+    }
+    if (point === 'E') {
+      end = [index, idx];
+      return 27;
+    }
+    return point.charCodeAt(0) - 96;
+  });
+}
+
+function reachScore(x: number, y: number, value: number, visited: Set<string>) {
+  if (x === start[0] && y === start[1]) return false;
+  if (x < 0 || y < 0 || x >= maze.length || y >= maze[0].length) return false;
+  if (visited.has(x + '-' + y)) return false;
+  if (maze[x][y] <= value + 1) return true;
+  return false;
+}
+
+function shortestPath(start: Position) {
+  const queue: [Position, number][] = [[start, 0]];
+  const visited = new Set<string>([start[0] + '-' + start[1]]);
+  let res = Infinity;
+
+  while (queue.length) {
+    const shift = queue.shift();
+    if (!shift) throw Error();
+    const [pos, steps] = shift;
+    const [x, y] = pos;
+
+    if (end[0] === pos[0] && end[1] === pos[1]) {
+      res = steps;
+      break;
+    }
+
+    const value = maze[x][y];
+    directions.forEach(([i, j]) => {
+      const newX = x + i;
+      const newY = y + j;
+      if (reachScore(newX, newY, value, visited)) {
+        visited.add(newX + '-' + newY);
+        queue.push([[newX, newY], steps + 1]);
+      }
+    });
+
+    console.log(
+      maze
+        .map((row, idx) =>
+          row
+            .map((col, colidx) =>
+              visited.has(idx + '-' + colidx)
+                ? String.fromCharCode(col + 96)
+                : ' '
+            )
+            .join('')
+        )
+        .join('\n')
+    );
+  }
+  return res;
 }
 
 async function process() {
   await file.applyFunction(onEachLine);
+  const result = shortestPath(start);
+  console.log(result);
 }
+
 process().then();
