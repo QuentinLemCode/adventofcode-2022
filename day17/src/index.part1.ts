@@ -62,10 +62,6 @@ async function process() {
   let jet = start;
 
   for (let rockI = 0; rockI < 2022; rockI++) {
-    if (rockI === 804) {
-      draw(map);
-      debugger;
-    }
     const rock = rocks[rockI % 5];
     let falling = true;
     let x = 2;
